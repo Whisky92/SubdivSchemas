@@ -19,12 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="half-edge.cpp" />
+    <ClCompile Include="face.cpp" />
+    <ClCompile Include="halfedge.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="vertex.h" />
+    <ClInclude Include="structures.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

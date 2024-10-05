@@ -1,7 +1,11 @@
-#include "vertex.h"
+#include "structures.h"
 
 Vertex::Vertex(float x, float y, float z) {
 	this->x = x;
 	this->y = y;
 	this->z = z;
 };
+
+std::string Vertex::toString() {
+	return "Vertex (" + std::to_string(this->x) + " " + std::to_string(this->y) + " " + std::to_string(this->z) + ")";
+}

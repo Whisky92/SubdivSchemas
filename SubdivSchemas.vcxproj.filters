@@ -21,15 +21,18 @@
     <ClCompile Include="vertex.cpp">
       <Filter>Source Files\Structures</Filter>
     </ClCompile>
-    <ClCompile Include="half-edge.cpp">
+    <ClCompile Include="halfedge.cpp">
       <Filter>Source Files\Structures</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="face.cpp">
+      <Filter>Source Files\Structures</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="vertex.h">
+    <ClInclude Include="structures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
