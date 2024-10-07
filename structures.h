@@ -2,6 +2,7 @@
 #define STRUCTURES_H
 
 #include <string>
+#include <vector>
 
 class Face;
 
@@ -13,6 +14,7 @@ public:
 	float z;
 
 	Vertex(float x, float y, float z);
+	bool isEqual(const Vertex& Ref) const;
 	std::string toString();
 };
 
@@ -38,6 +40,16 @@ public:
 	Face();
 	Face(HalfEdge* halfEdge);
 	std::string toString();
+};
+
+class ObjectModel {
+	std::vector<Vertex> vertices;
+	std::vector<Face> faces;
+	std::vector<HalfEdge> halfEdges;
+public:
+	ObjectModel();
+	bool readObjFile(std::string filename);
+	HalfEdge getHalfEdgeByOrigin(Vertex& vertex);
 };
 
 #endif

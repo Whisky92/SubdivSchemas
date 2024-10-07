@@ -22,10 +22,14 @@
     <ClCompile Include="face.cpp" />
     <ClCompile Include="halfedge.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ObjectModel.cpp" />
     <ClCompile Include="vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="structures.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="sphere.obj" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

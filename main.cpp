@@ -15,5 +15,10 @@ int main() {
 	cout << v1.toString() << endl;
 	cout << f1.toString() << endl;
 	cout << h1.toString() << endl;
+
+	ObjectModel objectModel = ObjectModel();
+
+	bool ok = objectModel.readObjFile("sphere.obj");
+
 	return 0;
 }
