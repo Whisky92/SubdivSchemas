@@ -20,6 +20,7 @@ bool ObjectModel::readObjFile(std::string filename) {
     std::string command;
     float xPos, yPos, zPos;
     std::string pos1, pos2, pos3;
+    std::vector<std::vector<int>> faceIndecis;
     while (!file.eof()) {
         file >> command;
         if (command == "v") {
@@ -28,21 +29,58 @@ bool ObjectModel::readObjFile(std::string filename) {
         }
         if (command == "f") {
             file >> pos1 >> pos2 >> pos3;
-            pos1 = pos1.substr(0, pos1.find('/', 0));
-            pos2 = pos2.substr(0, pos2.find('/', 0));
-            pos3 = pos3.substr(0, pos3.find('/', 0));
+            int indexOfVertex1 = std::stoi(pos1.substr(0, pos1.find('/', 0)));
+            int indexOfVertex2 = std::stoi(pos2.substr(0, pos2.find('/', 0)));
+            int indexOfVertex3 = std::stoi(pos3.substr(0, pos3.find('/', 0)));
+            std::vector<int> currentFace(3);
+            currentFace[0] = indexOfVertex1;
+            currentFace[1] = indexOfVertex2;
+            currentFace[2] = indexOfVertex3;
+            faceIndecis.push_back(currentFace);
         }
     }
-
     file.close();
+
+    for (auto& currentFaceIndecis : faceIndecis) {
+        Face* currentFace = new Face();
+
+        std::vector<HalfEdge*> currentHalfEdges = {
+            new HalfEdge(),
+            new HalfEdge(),
+            new HalfEdge()
+        };
+
+        for (int i = 0; i < currentHalfEdges.size(); i++) {
+            currentHalfEdges[i]->origin = &this->vertices[currentFaceIndecis[i]-1];
+            currentHalfEdges[i]->incidentFace = currentFace;
+            currentHalfEdges[i]->next = currentHalfEdges[(i + 1) % currentHalfEdges.size()];
+            currentHalfEdges[i]->prev = currentHalfEdges[(i + 2) % currentHalfEdges.size()];
+            for (auto& he : this->halfEdges) {
+                if (he.origin == &this->vertices[currentFaceIndecis[(i+1) % 3] - 1] && he.next->origin == currentHalfEdges[i]->origin) {
+                    if (he.twin != nullptr) {
+                        std::cout << "Something went wrong: " << he.toString() << std::endl;
+                    }
+                    he.twin = currentHalfEdges[i];
+                    currentHalfEdges[i]->twin = &he;
+                    continue;
+                }
+            }
+        }
+        for (auto& he : currentHalfEdges) {
+            this->halfEdges.push_back(*he);
+        }
+        currentFace->halfEdge = currentHalfEdges[0];
+        this->faces.push_back(*currentFace);
+    }
+
 	return true;
 }
 
-HalfEdge ObjectModel::getHalfEdgeByOrigin(Vertex& vertex) {
-    for (auto halfEdge : this->halfEdges) {
-        if (halfEdge.origin->isEqual(vertex)) {
-            return halfEdge;
+int ObjectModel::getHalfEdgeIndex(HalfEdge& halfEdge) {
+    for (int i = 0; i < this->halfEdges.size(); i++) {
+        if (&this->halfEdges[i] == &halfEdge) {
+            return i;
         }
     }
+    return -1;
 }
-

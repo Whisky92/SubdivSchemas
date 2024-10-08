@@ -12,6 +12,8 @@ HalfEdge::HalfEdge(Vertex* origin, Face* incidentFace) {
 	this->incidentFace = incidentFace;
 }
 
+HalfEdge::HalfEdge() {};
+
 std::string HalfEdge::toString() {
 	return "HalfEdge (" + this->origin->toString() + ")";
 }

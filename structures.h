@@ -29,6 +29,7 @@ public:
 
 	HalfEdge(Vertex* origin, Face* incidentFace, HalfEdge* next, HalfEdge* prev);
 	HalfEdge(Vertex* origin, Face* incidentFace);
+	HalfEdge();
 	std::string toString();
 };
 
@@ -43,13 +44,14 @@ public:
 };
 
 class ObjectModel {
-	std::vector<Vertex> vertices;
-	std::vector<Face> faces;
-	std::vector<HalfEdge> halfEdges;
 public:
 	ObjectModel();
 	bool readObjFile(std::string filename);
-	HalfEdge getHalfEdgeByOrigin(Vertex& vertex);
+	int getHalfEdgeIndex(HalfEdge& halfEdge);
+private:
+	std::vector<Vertex> vertices;
+	std::vector<Face> faces;
+	std::vector<HalfEdge> halfEdges;
 };
 
 #endif

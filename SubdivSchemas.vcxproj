@@ -28,9 +28,6 @@
   <ItemGroup>
     <ClInclude Include="structures.h" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="sphere.obj" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
