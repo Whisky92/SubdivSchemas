@@ -76,6 +76,22 @@ bool ObjectModel::readObjFile(std::string filename) {
 	return true;
 }
 
+std::vector<std::vector<Vertex*>> ObjectModel::getTriangles() {
+    std::vector<std::vector<Vertex*>> triangles(
+        this->faces.size(),
+        std::vector<Vertex*>(3));
+    for (int i = 0; i < this->faces.size(); i++) {
+        HalfEdge* halfEdge = this->faces[i].halfEdge;
+        std::vector<Vertex*> vertices(3);
+        for (int i = 0; i < 3; i++) {
+            vertices[i] = halfEdge->origin;
+            halfEdge = halfEdge->next;
+        }
+        triangles[i] = vertices;
+    }
+    return triangles;
+}
+
 int ObjectModel::getHalfEdgeIndex(HalfEdge& halfEdge) {
     for (int i = 0; i < this->halfEdges.size(); i++) {
         if (&this->halfEdges[i] == &halfEdge) {
