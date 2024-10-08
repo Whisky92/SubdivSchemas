@@ -30,10 +30,18 @@
     <ClCompile Include="face.cpp">
       <Filter>Source Files\Structures</Filter>
     </ClCompile>
+    <ClCompile Include="ObjectModel.cpp">
+      <Filter>Source Files\Structures</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="structures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="sphere.obj" />
+    <Text Include="cube.txt" />
+    <Text Include="simple.txt" />
   </ItemGroup>
 </Project>

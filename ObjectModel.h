@@ -1,0 +1,2 @@
+#ifndef OBJECTMODEL_H
+#define OBJECTMODEL_H

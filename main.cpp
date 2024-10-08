@@ -4,16 +4,18 @@
 using namespace std;
 
 int main() {
-	
-	Vertex v1(1.0, 2.0, 3.0);
-	Vertex v2(2.0, 3.0, 4.0);
-	Vertex v3(3.0, 4.0, 5.0);
 
-	Face f1;
-	HalfEdge h1(&v1, &f1);
-	f1.halfEdge = &h1;
-	cout << v1.toString() << endl;
-	cout << f1.toString() << endl;
-	cout << h1.toString() << endl;
+	ObjectModel objectModel = ObjectModel();
+
+	//bool ok = objectModel.readObjFile("resources/sphere.obj");
+	bool ok = objectModel.readObjFile("resources/tetrahedron.obj");
+
+	std::vector<std::vector<Vertex*>> triangles = objectModel.getTriangles();
+	for (std::vector<Vertex*> vertices : triangles) {
+		for (Vertex* vertex : vertices)
+			std::cout << vertex->toString() << '\t';
+		std::cout << '\n';
+	}
+
 	return 0;
 }
