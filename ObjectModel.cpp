@@ -21,11 +21,26 @@ bool ObjectModel::readObjFile(std::string filename) {
     float xPos, yPos, zPos;
     std::string pos1, pos2, pos3;
     std::vector<std::vector<int>> faceIndecis;
+    Vertex* minCubePos = new Vertex(1000000, 1000000, 1000000);
+    Vertex* maxCubePos = new Vertex(-1000000, -1000000, -1000000);
     while (!file.eof()) {
         file >> command;
         if (command == "v") {
             file >> xPos >> yPos >> zPos;
             this->vertices.push_back(Vertex(xPos, yPos, zPos));
+            if (minCubePos->x > xPos)
+                minCubePos->x = xPos;
+            if (minCubePos->y > yPos)
+                minCubePos->y = yPos;
+            if (minCubePos->z > zPos)
+                minCubePos->z = zPos;
+
+            if (maxCubePos->x < xPos)
+                maxCubePos->x = xPos;
+            if (maxCubePos->y < yPos)
+                maxCubePos->y = yPos;
+            if (maxCubePos->z < zPos)
+                maxCubePos->z = zPos;
         }
         if (command == "f") {
             file >> pos1 >> pos2 >> pos3;
@@ -40,6 +55,9 @@ bool ObjectModel::readObjFile(std::string filename) {
         }
     }
     file.close();
+
+    this->minCubePos = minCubePos;
+    this->maxCubePos = maxCubePos;
 
     for (auto& currentFaceIndecis : faceIndecis) {
         Face* currentFace = new Face();

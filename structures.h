@@ -46,8 +46,11 @@ public:
 
 class ObjectModel {
 public:
-	ObjectModel();
 	bool readObjFile(std::string filename);
+	Vertex* minCubePos;
+	Vertex* maxCubePos;
+
+	ObjectModel();
 	std::vector<std::vector<Vertex*>> getTriangles();
 private:
 	std::vector<Vertex> vertices;
