@@ -9,7 +9,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-const static std::string sourceFile = "resources/tetrahedron.obj";
+const static std::string sourceFile = "resources/sphere.obj";
 
 static ObjectModel objectModel = ObjectModel();
 static bool isSuccessfulRead;
@@ -19,7 +19,7 @@ static float radiusX, radiusY, radiusZ;
 static float frustumBottom, frustumTop, frustumLeft, frustumRight, frustumNear, frustumFar;                    
 static float camX, camY, camZ;
 static float centerX, centerY, centerZ;
-static float angle = 0;
+static float angleX = 0.0, angleY = 0.0, angleZ = 0.0;
 
 void calculateViewPositions() {
 	Vertex* minPos = objectModel.minCubePos;
@@ -69,6 +69,9 @@ void calculateViewPositions() {
 	std::cout << "camY " << camY << std::endl;
 	std::cout << "camZ " << camZ << std::endl;
 	std::cout << "distanceZ " << distanceZ << std::endl;
+	std::cout << "centerX " << centerX << std::endl;
+	std::cout << "centerY " << centerY << std::endl;
+	std::cout << "centerZ " << centerZ << std::endl;
 }
 
 void drawTriangles() {
@@ -76,7 +79,7 @@ void drawTriangles() {
 
 	for (std::vector<Vertex*> vertices : triangles) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glColor3f(0.0, 0.0, 0.0);
+		glColor3f(0.4f, 0.416f, 0.427f);
 		glBegin(GL_TRIANGLES);
 		for (Vertex* vertex : vertices) {
 			glVertex3f(vertex->x, vertex->y, vertex->z);
@@ -84,7 +87,15 @@ void drawTriangles() {
 		glEnd();
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glColor3f(0.0, 0.0, 1.0);
+
+		if (sourceFile == "resources/tetrahedron.obj") {
+			glLineWidth(3.0f);
+		}
+		else {
+			glLineWidth(2.0f);
+		}
+
+		glColor3f(1.0, 0.0, 0.0);
 		glBegin(GL_TRIANGLES);
 		for (Vertex* vertex : vertices) {
 			glVertex3f(vertex->x, vertex->y, vertex->z);
@@ -97,7 +108,7 @@ void setup(void)
 {
 	isSuccessfulRead = objectModel.readObjFile(sourceFile);
 	calculateViewPositions();
-	glClearColor(1.0, 1.0, 1.0, 0.0);
+	glClearColor(0.933f, 0.804f, 0.561f, 1.0f);
 }
 
 void drawScene(void)
@@ -105,15 +116,15 @@ void drawScene(void)
 	glClear(GL_COLOR_BUFFER_BIT);
 	glLoadIdentity();
 
-	camZ = centerZ + distanceZ * cos(angle);
-	camY = centerY + distanceZ * sin(angle);
-
-	std::cout << std::endl;
-	std::cout << "camZ: " << camZ << std::endl;
-	std::cout << "camY: " << camY << std::endl;
-	std::cout << "distanceZ: " << distanceZ << std::endl;
-	std::cout << "angle: " << angle << std::endl;
 	gluLookAt(camX, camY, camZ, centerX, centerY, centerZ, 0.0, 1.0, 0.0);
+
+	glTranslatef(centerX, centerY, centerZ);
+
+	glRotatef(angleX, 1.0, 0.0, 0.0);
+	glRotatef(angleY, 0.0, 1.0, 0.0);
+	glRotatef(angleZ, 0.0, 0.0, 1.0);
+
+	glTranslatef(-centerX, -centerY, -centerZ);
 
 	if (isSuccessfulRead)
 	{
@@ -136,11 +147,20 @@ void keyInput(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
-		case 'r':
-			angle += 2;
-			if (angle == 360) {
-				angle = 0;
-			}
+		case 'x':
+			angleX += 1.0;
+			if (angleX > 360.0) angleX -= 360.0;
+			glutPostRedisplay();
+			break;
+		case 'y':
+			angleY += 1.0;
+			if (angleY > 360.0) angleY -= 360.0;
+			glutPostRedisplay();
+			break;
+		case 'z':
+			angleZ += 1.0;
+			if (angleZ > 360.0) angleZ -= 360.0;
+			glutPostRedisplay();
 			break;
 		default:
 			break;
@@ -152,8 +172,9 @@ void printInteraction(void)
 {
 	std::cout << "Interaction:" << std::endl;
 	std::cout << std::endl;
-	std::cout << "Press R to rotate the camera around the object" << std::endl;
-
+	std::cout << "Press X to rotate the object around X axis" << std::endl;
+	std::cout << "Press Y to rotate the object around Y axis" << std::endl;
+	std::cout << "Press Z to rotate the object around Z axis" << std::endl;
 }
 
 int main(int argc, char** argv)
