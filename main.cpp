@@ -9,7 +9,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-const static std::string sourceFile = "resources/sphere.obj";
+const static std::string sourceFile = "resources/tetrahedron.obj";
 
 static ObjectModel objectModel = ObjectModel();
 static bool isSuccessfulRead;
@@ -20,6 +20,7 @@ static float frustumBottom, frustumTop, frustumLeft, frustumRight, frustumNear, 
 static float camX, camY, camZ;
 static float centerX, centerY, centerZ;
 static float angleX = 0.0, angleY = 0.0, angleZ = 0.0;
+static const float rotateStep = 4.0;
 
 void calculateViewPositions() {
 	Vertex* minPos = objectModel.minCubePos;
@@ -39,7 +40,6 @@ void calculateViewPositions() {
 	frustumLeft = minPos->x - radiusX;
 	frustumRight = maxPos->x + radiusX;
 	frustumNear = (zOffset - maxPos->z) > radiusZ ? maxPos->z + radiusZ + zOffset : zOffset;
-	//frustumNear = maxPos->z > radiusZ ? maxPos->z + radiusZ + 0.0 : 0.0;
 	frustumFar = frustumNear * 5;
 
 	centerX = shapeCenterX;
@@ -139,7 +139,7 @@ void resize(int w, int h)
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(frustumLeft, frustumRight, frustumBottom, frustumTop, frustumNear, frustumFar); //(-5.0, -5.0, -5.0) (5.0, 5.0, -5.0) (-20.0, -20.0, -20.0) (20.0, 20.0, -20.0)
+	glFrustum(frustumLeft, frustumRight, frustumBottom, frustumTop, frustumNear, frustumFar);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -148,17 +148,32 @@ void keyInput(unsigned char key, int x, int y)
 	switch (key)
 	{
 		case 'x':
-			angleX += 1.0;
+			angleX += rotateStep;
+			if (angleX > 360.0) angleX -= 360.0;
+			glutPostRedisplay();
+			break;
+		case 'X':
+			angleX -= rotateStep;
 			if (angleX > 360.0) angleX -= 360.0;
 			glutPostRedisplay();
 			break;
 		case 'y':
-			angleY += 1.0;
+			angleY += rotateStep;
+			if (angleY > 360.0) angleY -= 360.0;
+			glutPostRedisplay();
+			break;
+		case 'Y':
+			angleY -= rotateStep;
 			if (angleY > 360.0) angleY -= 360.0;
 			glutPostRedisplay();
 			break;
 		case 'z':
-			angleZ += 1.0;
+			angleZ += rotateStep;
+			if (angleZ > 360.0) angleZ -= 360.0;
+			glutPostRedisplay();
+			break;
+		case 'Z':
+			angleZ -= rotateStep;
 			if (angleZ > 360.0) angleZ -= 360.0;
 			glutPostRedisplay();
 			break;
