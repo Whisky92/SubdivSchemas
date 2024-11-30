@@ -52,12 +52,14 @@ public:
 
 	ObjectModel();
 	std::vector<std::vector<Vertex*>> getTriangles();
+	void doLoopSubdivision();
 private:
 	std::vector<Vertex> vertices;
 	std::vector<Face> faces;
 	std::vector<HalfEdge> halfEdges;
 
 	int getHalfEdgeIndex(HalfEdge& halfEdge);
+	Vertex* createVertexAtHalfWay(Vertex& v1, Vertex& v2);
 };
 
 #endif

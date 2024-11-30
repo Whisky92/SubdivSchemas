@@ -80,7 +80,7 @@ bool ObjectModel::readObjFile(std::string filename) {
                     }
                     he.twin = currentHalfEdges[i];
                     currentHalfEdges[i]->twin = &he;
-                    continue;
+                    break;
                 }
             }
         }
@@ -117,4 +117,27 @@ int ObjectModel::getHalfEdgeIndex(HalfEdge& halfEdge) {
         }
     }
     return -1;
+}
+
+void ObjectModel::doLoopSubdivision() {
+    std::vector<Vertex*> oddVertecis = std::vector<Vertex*>(this->halfEdges.size());
+    for (int i = 0; i < this->halfEdges.size(); i++) {
+        if (oddVertecis[i] != nullptr) {
+            Vertex* originVertex = this->halfEdges[i].origin;
+            Vertex* nextVertex = this->halfEdges[i].next->origin;
+            Vertex* currentOddVertex = this->createVertexAtHalfWay(*originVertex, *nextVertex);
+            oddVertecis[i] = currentOddVertex;
+            oddVertecis[this->getHalfEdgeIndex(*this->halfEdges[i].next)] = currentOddVertex;
+        }
+    }
+}
+
+Vertex* ObjectModel::createVertexAtHalfWay(Vertex& v1, Vertex& v2) {
+    Vertex* oddVertex = new Vertex(
+        (v1.x + v2.x) / 2.0,
+        (v1.y + v2.y) / 2.0,
+        (v1.z + v2.z) / 2.0
+    );
+
+    return oddVertex;
 }

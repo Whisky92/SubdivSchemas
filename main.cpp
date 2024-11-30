@@ -9,7 +9,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-const static std::string sourceFile = "resources/tetrahedron.obj";
+const static std::string sourceFile = "resources/cube.obj";
 
 static ObjectModel objectModel = ObjectModel();
 static bool isSuccessfulRead;
@@ -154,7 +154,7 @@ void keyInput(unsigned char key, int x, int y)
 			break;
 		case 'X':
 			angleX -= rotateStep;
-			if (angleX > 360.0) angleX -= 360.0;
+			if (angleX <= 0.0) angleX += 360.0;
 			glutPostRedisplay();
 			break;
 		case 'y':
@@ -164,7 +164,7 @@ void keyInput(unsigned char key, int x, int y)
 			break;
 		case 'Y':
 			angleY -= rotateStep;
-			if (angleY > 360.0) angleY -= 360.0;
+			if (angleY <= 0.0) angleY += 360.0;
 			glutPostRedisplay();
 			break;
 		case 'z':
@@ -174,7 +174,7 @@ void keyInput(unsigned char key, int x, int y)
 			break;
 		case 'Z':
 			angleZ -= rotateStep;
-			if (angleZ > 360.0) angleZ -= 360.0;
+			if (angleZ <= 0.0) angleZ += 360.0;
 			glutPostRedisplay();
 			break;
 		default:
