@@ -52,7 +52,7 @@ public:
 
 	ObjectModel();
 	std::vector<std::vector<Vertex*>> getTriangles();
-	void doLoopSubdivision();
+	std::vector<Vertex*> doLoopSubdivision();
 private:
 	std::vector<Vertex> vertices;
 	std::vector<Face> faces;
@@ -60,6 +60,7 @@ private:
 
 	int getHalfEdgeIndex(HalfEdge& halfEdge);
 	Vertex* createVertexAtHalfWay(Vertex& v1, Vertex& v2);
+	Vertex* createVertexWithWeights(std::vector<Vertex*>& vertecis, std::vector<float>& weights);
 };
 
 #endif
