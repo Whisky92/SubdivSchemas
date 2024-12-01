@@ -54,9 +54,9 @@ public:
 	std::vector<std::vector<Vertex*>> getTriangles();
 	std::vector<Vertex*> doLoopSubdivision();
 private:
-	std::vector<Vertex> vertices;
-	std::vector<Face> faces;
-	std::vector<HalfEdge> halfEdges;
+	std::vector<Vertex*> vertices;
+	std::vector<Face*> faces;
+	std::vector<HalfEdge*> halfEdges;
 
 	int getHalfEdgeIndex(HalfEdge& halfEdge);
 	Vertex* createVertexAtHalfWay(Vertex& v1, Vertex& v2);

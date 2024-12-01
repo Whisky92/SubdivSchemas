@@ -27,7 +27,7 @@ bool ObjectModel::readObjFile(std::string filename) {
         file >> command;
         if (command == "v") {
             file >> xPos >> yPos >> zPos;
-            this->vertices.push_back(Vertex(xPos, yPos, zPos));
+            this->vertices.push_back(new Vertex(xPos, yPos, zPos));
             if (minCubePos->x > xPos)
                 minCubePos->x = xPos;
             if (minCubePos->y > yPos)
@@ -69,26 +69,26 @@ bool ObjectModel::readObjFile(std::string filename) {
         };
 
         for (int i = 0; i < currentHalfEdges.size(); i++) {
-            currentHalfEdges[i]->origin = &this->vertices[currentFaceIndecis[i]-1];
+            currentHalfEdges[i]->origin = this->vertices[currentFaceIndecis[i]-1];
             currentHalfEdges[i]->incidentFace = currentFace;
             currentHalfEdges[i]->next = currentHalfEdges[(i + 1) % currentHalfEdges.size()];
             currentHalfEdges[i]->prev = currentHalfEdges[(i + 2) % currentHalfEdges.size()];
-            for (auto& he : this->halfEdges) {
-                if (he.origin == &this->vertices[currentFaceIndecis[(i+1) % 3] - 1] && he.next->origin == currentHalfEdges[i]->origin) {
-                    if (he.twin != nullptr) {
-                        std::cout << "Something went wrong: " << he.toString() << std::endl;
+            for (auto he : this->halfEdges) {
+                if (he->origin == this->vertices[currentFaceIndecis[(i+1) % 3] - 1] && he->next->origin == currentHalfEdges[i]->origin) {
+                    if (he->twin != nullptr) {
+                        std::cout << "Something went wrong: " << he->toString() << std::endl;
                     }
-                    he.twin = currentHalfEdges[i];
-                    currentHalfEdges[i]->twin = &he;
-                    break;
+                    he->twin = currentHalfEdges[i];
+                    currentHalfEdges[i]->twin = he;
+                    continue;
                 }
             }
         }
-        for (auto& he : currentHalfEdges) {
-            this->halfEdges.push_back(*he);
+        for (auto he : currentHalfEdges) {
+            this->halfEdges.push_back(he);
         }
         currentFace->halfEdge = currentHalfEdges[0];
-        this->faces.push_back(*currentFace);
+        this->faces.push_back(currentFace);
     }
 
 	return true;
@@ -99,7 +99,7 @@ std::vector<std::vector<Vertex*>> ObjectModel::getTriangles() {
         this->faces.size(),
         std::vector<Vertex*>(3));
     for (int i = 0; i < this->faces.size(); i++) {
-        HalfEdge* halfEdge = this->faces[i].halfEdge;
+        HalfEdge* halfEdge = this->faces[i]->halfEdge;
         std::vector<Vertex*> vertices(3);
         for (int i = 0; i < 3; i++) {
             vertices[i] = halfEdge->origin;
@@ -112,7 +112,7 @@ std::vector<std::vector<Vertex*>> ObjectModel::getTriangles() {
 
 int ObjectModel::getHalfEdgeIndex(HalfEdge& halfEdge) {
     for (int i = 0; i < this->halfEdges.size(); i++) {
-        if (&this->halfEdges[i] == &halfEdge) {
+        if (this->halfEdges[i] == &halfEdge) {
             return i;
         }
     }
@@ -126,18 +126,15 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
     for (int i = 0; i < this->halfEdges.size(); i++) {
         if (oddVertecis[i] == nullptr) {
             std::vector<Vertex*> vertecis = {
-                this->halfEdges[i].origin,                  // halfedge origin
-                this->halfEdges[i].next->origin,            // halfedge destination
-                this->halfEdges[i].next->next->origin,      // third vertex of face
-                this->halfEdges[i].twin->next->next->origin // twin's farer vertex
+                this->halfEdges[i]->origin,            // halfedge origin
+                this->halfEdges[i]->next->origin,      // halfedge destination
+                this->halfEdges[i]->prev->origin,      // third vertex of face
+                this->halfEdges[i]->twin->prev->origin // twin's farer vertex
             };
             Vertex* currentOddVertex = this->createVertexWithWeights(vertecis, loopSubdivScheme);
 
-            /*Vertex* originVertex = this->halfEdges[i].origin;
-            Vertex* nextVertex = this->halfEdges[i].next->origin;
-            Vertex* currentOddVertex = this->createVertexAtHalfWay(*originVertex, *nextVertex);*/
             oddVertecis[i] = currentOddVertex;
-            oddVertecis[this->getHalfEdgeIndex(*this->halfEdges[i].twin)] = currentOddVertex;
+            oddVertecis[this->getHalfEdgeIndex(*this->halfEdges[i]->twin)] = currentOddVertex;
         }
     }
 

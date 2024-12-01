@@ -9,7 +9,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-const static std::string sourceFile = "resources/tetrahedron.obj";
+const static std::string sourceFile = "resources/cube.obj";
 
 static ObjectModel objectModel = ObjectModel();
 static bool isSuccessfulRead;
@@ -104,10 +104,11 @@ void drawTriangles() {
 		glEnd();
 	}
 
+	glPointSize(5.0f);
 	glColor3f(0.0, 1.0, 0.0);
 	glBegin(GL_POINTS);
 	for (Vertex* vertex : oddVertices) {
-		glVertex3i(vertex->x, vertex->y, vertex->z);
+		glVertex3f(vertex->x, vertex->y, vertex->z);
 	}
 	glEnd();
 }
