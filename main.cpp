@@ -35,12 +35,14 @@ void calculateViewPositions() {
 	
 	float zOffset = radiusZ * 3.0;
 
-	frustumBottom = minPos->y - radiusY;
-	frustumTop = maxPos->y + radiusY;
-	frustumLeft = minPos->x - radiusX;
-	frustumRight = maxPos->x + radiusX;
-	frustumNear = (zOffset - maxPos->z) > radiusZ ? maxPos->z + radiusZ + zOffset : zOffset;
-	frustumFar = frustumNear * 5;
+	float frustrumSize = std::max(radiusX, std::max(radiusY, radiusZ));
+
+	frustumBottom = -frustrumSize;
+	frustumTop = frustrumSize;
+	frustumLeft = -frustrumSize;
+	frustumRight = frustrumSize;
+	frustumNear = frustrumSize * 1;
+	frustumFar = frustumNear * 6;
 
 	centerX = shapeCenterX;
 	centerY = shapeCenterY;
@@ -75,11 +77,27 @@ void calculateViewPositions() {
 }
 
 void drawTriangles() {
+
+
 	std::vector<std::vector<Vertex*>> triangles = objectModel.getTriangles();
-	std::vector<Vertex*> oddVertices = objectModel.doLoopSubdivision();
+	//std::vector<Vertex*> oddVertices = objectModel.doLoopSubdivision();
+
+	glPolygonMode(GL_FRONT, GL_FILL);
+	glPushMatrix();
+	glTranslatef(1.5, 0.5, -0.5);
+	glRotatef(135, 0.0, -1.0, 0.0);
+	glutSolidTeapot(0.5);
+	glPopMatrix();
+
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glPushMatrix();
+	glTranslatef(1.5, 0.5, -0.5);
+	glRotatef(135, 0.0, -1.0, 0.0);
+	glutSolidTeapot(0.5);
+	glPopMatrix();
 
 	for (std::vector<Vertex*> vertices : triangles) {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glPolygonMode(GL_FRONT, GL_FILL);
 		glColor3f(0.4f, 0.416f, 0.427f);
 		glBegin(GL_TRIANGLES);
 		for (Vertex* vertex : vertices) {
@@ -87,7 +105,7 @@ void drawTriangles() {
 		}
 		glEnd();
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glPolygonMode(GL_FRONT, GL_LINE);
 
 		if (sourceFile == "resources/tetrahedron.obj") {
 			glLineWidth(3.0f);
@@ -97,20 +115,20 @@ void drawTriangles() {
 		}
 
 		glColor3f(1.0, 0.0, 0.0);
-		glBegin(GL_TRIANGLES);
+		glBegin(GL_LINE_LOOP);
 		for (Vertex* vertex : vertices) {
 			glVertex3f(vertex->x, vertex->y, vertex->z);
 		}
 		glEnd();
 	}
 
-	glPointSize(5.0f);
+	/*glPointSize(5.0f);
 	glColor3f(0.0, 1.0, 0.0);
 	glBegin(GL_POINTS);
 	for (Vertex* vertex : oddVertices) {
 		glVertex3f(vertex->x, vertex->y, vertex->z);
 	}
-	glEnd();
+	glEnd();*/
 }
 
 void setup(void)
@@ -185,6 +203,9 @@ void keyInput(unsigned char key, int x, int y)
 			angleZ -= rotateStep;
 			if (angleZ <= 0.0) angleZ += 360.0;
 			glutPostRedisplay();
+			break;
+		case 'q':
+			exit(0);
 			break;
 		default:
 			break;

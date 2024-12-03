@@ -138,6 +138,86 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
         }
     }
 
+    // new vertex is Q:
+    //    M
+    // O  Q  N
+    //    P
+
+    for (int i = 0; i < oddVertecis.size(); i++)
+    {
+        Vertex* vertex = oddVertecis[i];
+        this->vertices.push_back(vertex);
+
+        HalfEdge* halfEdgeNM = this->halfEdges[i]->next;
+
+        HalfEdge* halfEdgeQM = new HalfEdge(
+            vertex,
+            this->halfEdges[i]->incidentFace,
+            this->halfEdges[i]->prev,
+            this->halfEdges[i]
+        );
+
+        Face* faceQNM = new Face();
+        HalfEdge* halfEdgeMQ = new HalfEdge(
+            this->halfEdges[i]->prev->origin,
+            faceQNM
+        );
+        halfEdgeMQ->twin = halfEdgeQM;
+        halfEdgeQM->twin = halfEdgeMQ;
+        HalfEdge* halfEdgeQN = new HalfEdge(
+            vertex,
+            faceQNM,
+            halfEdgeNM,
+            halfEdgeMQ
+        );
+        halfEdgeMQ->prev = halfEdgeNM;
+        halfEdgeMQ->next = halfEdgeQN;
+
+        HalfEdge* halfEdgeOQ = this->halfEdges[i];
+        HalfEdge* halfEdgeQO = halfEdgeOQ->twin;
+        halfEdgeOQ->next = halfEdgeQM;
+
+        HalfEdge* halfEdgeOP = halfEdgeQO->next;
+        HalfEdge* halfEdgePN = halfEdgeQO->next->next;
+        halfEdgeQO->origin = vertex;
+
+        HalfEdge* halfEdgePQ = new HalfEdge(
+            halfEdgePN->origin,
+            halfEdgeQO->incidentFace,
+            halfEdgeQO,
+            halfEdgeQO->next
+        );
+
+        Face* faceQPN = new Face();
+
+        HalfEdge* halfEdgeNQ = new HalfEdge(
+            halfEdgeNM->origin,
+            faceQPN
+        );
+
+        HalfEdge* halfEdgeQP = new HalfEdge(
+            vertex,
+            faceQPN,
+            halfEdgePN,
+            halfEdgeNQ
+        );
+
+        halfEdgeNQ->next = halfEdgeQP;
+        halfEdgeNQ->twin = halfEdgeQN;
+        // halfEdgeNQ prev is not change
+
+        halfEdgeQO->prev = halfEdgePQ;
+        halfEdgePQ->incidentFace->halfEdge = halfEdgePQ;
+
+        halfEdgeNM->next = halfEdgeMQ;
+        halfEdgeNM->incidentFace->halfEdge = halfEdgeNM;
+
+        faceQNM->halfEdge = halfEdgeMQ;
+        faceQPN->halfEdge = halfEdgeQP;
+        this->faces.push_back(faceQNM);
+        this->faces.push_back(faceQPN);
+    }
+
     return oddVertecis;
 }
 
