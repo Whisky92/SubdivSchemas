@@ -138,6 +138,10 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
         }
     }
 
+    return oddVertecis;
+
+    // TEST
+    // 
     // new vertex is Q:
     //    M
     // O  Q  N

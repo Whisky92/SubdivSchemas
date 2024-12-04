@@ -14,7 +14,6 @@ const static std::string sourceFile = "resources/cube.obj";
 static ObjectModel objectModel = ObjectModel();
 static bool isSuccessfulRead;
 
-static float distanceZ;
 static float radiusX, radiusY, radiusZ;
 static float frustumBottom, frustumTop, frustumLeft, frustumRight, frustumNear, frustumFar;                    
 static float camX, camY, camZ;
@@ -25,13 +24,13 @@ static const float rotateStep = 4.0;
 void calculateViewPositions() {
 	Vertex* minPos = objectModel.minCubePos;
 	Vertex* maxPos = objectModel.maxCubePos;
-	float shapeCenterX = (minPos->x + maxPos->x) / 2;
-	float shapeCenterY = (minPos->y + maxPos->y) / 2;
-	float shapeCenterZ = (minPos->y + maxPos->z) / 2;
+	centerX = (minPos->x + maxPos->x) / 2;
+	centerY = (minPos->y + maxPos->y) / 2;
+	centerZ = (minPos->y + maxPos->z) / 2;
 
-	radiusX = maxPos->x - shapeCenterX;
-	radiusY = maxPos->y - shapeCenterY;
-	radiusZ = (maxPos->z - shapeCenterZ);
+	radiusX = maxPos->x - centerX;
+	radiusY = maxPos->y - centerY;
+	radiusZ = maxPos->z - centerZ;
 	
 	float zOffset = radiusZ * 3.0;
 
@@ -41,20 +40,14 @@ void calculateViewPositions() {
 	frustumTop = frustrumSize;
 	frustumLeft = -frustrumSize;
 	frustumRight = frustrumSize;
-	frustumNear = frustrumSize * 1;
+	frustumNear = frustrumSize;
 	frustumFar = frustumNear * 6;
-
-	centerX = shapeCenterX;
-	centerY = shapeCenterY;
-	centerZ = shapeCenterZ;
 
 	camX = centerX;
 	camY = centerY;
 	camZ = (frustumNear - maxPos->z - zOffset) < radiusZ ? maxPos->z + radiusZ + zOffset : frustumNear;
 
-	distanceZ = camZ - shapeCenterZ;
-
-	std::cout << "shapeCenterZ " << shapeCenterZ << std::endl;
+	std::cout << "centerZ " << centerZ << std::endl;
 	std::cout << "maxX " << maxPos->x << std::endl;
 	std::cout << "maxY " << maxPos->y << std::endl;
 	std::cout << "maxZ " << maxPos->z << std::endl;
@@ -70,31 +63,14 @@ void calculateViewPositions() {
 	std::cout << "camX " << camX << std::endl;
 	std::cout << "camY " << camY << std::endl;
 	std::cout << "camZ " << camZ << std::endl;
-	std::cout << "distanceZ " << distanceZ << std::endl;
 	std::cout << "centerX " << centerX << std::endl;
 	std::cout << "centerY " << centerY << std::endl;
 	std::cout << "centerZ " << centerZ << std::endl;
 }
 
 void drawTriangles() {
-
-
 	std::vector<std::vector<Vertex*>> triangles = objectModel.getTriangles();
-	//std::vector<Vertex*> oddVertices = objectModel.doLoopSubdivision();
-
-	glPolygonMode(GL_FRONT, GL_FILL);
-	glPushMatrix();
-	glTranslatef(1.5, 0.5, -0.5);
-	glRotatef(135, 0.0, -1.0, 0.0);
-	glutSolidTeapot(0.5);
-	glPopMatrix();
-
-	glPolygonMode(GL_FRONT, GL_LINE);
-	glPushMatrix();
-	glTranslatef(1.5, 0.5, -0.5);
-	glRotatef(135, 0.0, -1.0, 0.0);
-	glutSolidTeapot(0.5);
-	glPopMatrix();
+	std::vector<Vertex*> oddVertices = objectModel.doLoopSubdivision();
 
 	for (std::vector<Vertex*> vertices : triangles) {
 		glPolygonMode(GL_FRONT, GL_FILL);
@@ -122,13 +98,13 @@ void drawTriangles() {
 		glEnd();
 	}
 
-	/*glPointSize(5.0f);
+	glPointSize(5.0f);
 	glColor3f(0.0, 1.0, 0.0);
 	glBegin(GL_POINTS);
 	for (Vertex* vertex : oddVertices) {
 		glVertex3f(vertex->x, vertex->y, vertex->z);
 	}
-	glEnd();*/
+	glEnd();
 }
 
 void setup(void)
@@ -140,7 +116,7 @@ void setup(void)
 
 void drawScene(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
 	gluLookAt(camX, camY, camZ, centerX, centerY, centerZ, 0.0, 1.0, 0.0);
@@ -168,6 +144,7 @@ void resize(int w, int h)
 	glLoadIdentity();
 	glFrustum(frustumLeft, frustumRight, frustumBottom, frustumTop, frustumNear, frustumFar);
 	glMatrixMode(GL_MODELVIEW);
+	glEnable(GL_DEPTH_TEST);
 }
 
 void keyInput(unsigned char key, int x, int y)
@@ -213,6 +190,14 @@ void keyInput(unsigned char key, int x, int y)
 	glutPostRedisplay();
 }
 
+// Callback routine for non-ASCII key entry.
+void specialKeyInput(int key, int x, int y)
+{
+	if (key == GLUT_KEY_UP) camZ+=.5;
+	else if (key == GLUT_KEY_DOWN) camZ-=.5;
+	glutPostRedisplay();
+}
+
 void printInteraction(void)
 {
 	std::cout << "Interaction:" << std::endl;
@@ -230,13 +215,14 @@ int main(int argc, char** argv)
 	glutInitContextVersion(4, 3);
 	glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
 
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInitWindowSize(500, 500);
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("subdiv.cpp");
 	glutDisplayFunc(drawScene);
 	glutReshapeFunc(resize);
 	glutKeyboardFunc(keyInput);
+	glutSpecialFunc(specialKeyInput);
 
 	glewExperimental = GL_TRUE;
 	glewInit();
