@@ -134,13 +134,13 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
             Vertex* currentOddVertex = this->createVertexWithWeights(vertecis, loopSubdivScheme);
 
             oddVertecis[i] = currentOddVertex;
-            oddVertecis[this->getHalfEdgeIndex(*this->halfEdges[i]->twin)] = currentOddVertex;
+            oddVertecis[this->getHalfEdgeIndex(*this->halfEdges[i]->    twin)] = currentOddVertex;
         }
     }
 
-    return oddVertecis;
+   // return oddVertecis;
 
-    // TEST
+    // TEST 
     // 
     // new vertex is Q:
     //    M
