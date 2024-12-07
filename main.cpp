@@ -21,6 +21,8 @@ static float centerX, centerY, centerZ;
 static float angleX = 0.0, angleY = 0.0, angleZ = 0.0;
 static const float rotateStep = 4.0;
 
+std::vector<Vertex*> oddVertices;
+
 void calculateViewPositions() {
 	Vertex* minPos = objectModel.minCubePos;
 	Vertex* maxPos = objectModel.maxCubePos;
@@ -70,7 +72,6 @@ void calculateViewPositions() {
 
 void drawTriangles() {
 	std::vector<std::vector<Vertex*>> triangles = objectModel.getTriangles();
-	std::vector<Vertex*> oddVertices = objectModel.doLoopSubdivision();
 
 	for (std::vector<Vertex*> vertices : triangles) {
 		glPolygonMode(GL_FRONT, GL_FILL);
@@ -84,7 +85,7 @@ void drawTriangles() {
 		glPolygonMode(GL_FRONT, GL_LINE);
 
 		if (sourceFile == "resources/tetrahedron.obj") {
-			glLineWidth(3.0f);
+			glLineWidth(1.0f);
 		}
 		else {
 			glLineWidth(2.0f);
@@ -98,18 +99,23 @@ void drawTriangles() {
 		glEnd();
 	}
 
-	glPointSize(5.0f);
-	glColor3f(0.0, 1.0, 0.0);
-	glBegin(GL_POINTS);
-	for (Vertex* vertex : oddVertices) {
-		glVertex3f(vertex->x, vertex->y, vertex->z);
-	}
-	glEnd();
+	//glPointSize(5.0f);
+	//glColor3f(0.0, 1.0, 0.0);
+	//glBegin(GL_POINTS);
+	//for (Vertex* vertex : oddVertices) {
+	//	glVertex3f(vertex->x, vertex->y, vertex->z);
+	//}
+	//glEnd();
 }
 
 void setup(void)
 {
 	isSuccessfulRead = objectModel.readObjFile(sourceFile);
+	oddVertices = objectModel.doLoopSubdivision();
+	std::cout << "setup done\n";
+	objectModel.doLoopSubdivision();
+	//objectModel.doLoopSubdivision();
+	//objectModel.doLoopSubdivision();
 	calculateViewPositions();
 	glClearColor(0.933f, 0.804f, 0.561f, 1.0f);
 }
@@ -193,8 +199,8 @@ void keyInput(unsigned char key, int x, int y)
 // Callback routine for non-ASCII key entry.
 void specialKeyInput(int key, int x, int y)
 {
-	if (key == GLUT_KEY_UP) camZ+=.5;
-	else if (key == GLUT_KEY_DOWN) camZ-=.5;
+	if (key == GLUT_KEY_UP) camZ+=.25;
+	else if (key == GLUT_KEY_DOWN) camZ-=.25;
 	glutPostRedisplay();
 }
 
@@ -216,8 +222,8 @@ int main(int argc, char** argv)
 	glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
 
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA | GLUT_DEPTH);
-	glutInitWindowSize(500, 500);
-	glutInitWindowPosition(100, 100);
+	glutInitWindowSize(800, 800);
+	glutInitWindowPosition(0, 0);
 	glutCreateWindow("subdiv.cpp");
 	glutDisplayFunc(drawScene);
 	glutReshapeFunc(resize);
