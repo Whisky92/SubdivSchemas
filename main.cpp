@@ -3,6 +3,7 @@
 #include "structures.h"
 #include <iostream>
 #include <array>
+#include <fstream>
 
 #include <cmath>
 #include <iostream>
@@ -10,7 +11,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-const static std::string sourceFile = "resources/sphere.obj";
+const static std::string sourceFile = "resorces/sphere.obj";
 
 static ObjectModel objectModel = ObjectModel();
 static bool isSuccessfulRead;
@@ -274,6 +275,12 @@ void printInteraction(void)
 
 int main(int argc, char** argv)
 {
+	std::ifstream f(sourceFile.c_str());
+	if (!f.good()) {
+		std::cout << "Invalid file" << std::endl;
+		return 0;
+	}
+
 	printInteraction();
 	glutInit(&argc, argv);
 
