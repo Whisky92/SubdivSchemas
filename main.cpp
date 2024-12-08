@@ -11,7 +11,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-const static std::string sourceFile = "resources/sphere.obj";
+const static std::string sourceFile = "resources/cube.obj";
 
 static ObjectModel objectModel = ObjectModel();
 static bool isSuccessfulRead;
@@ -97,7 +97,6 @@ std::array<float, 3> calculateNormalVertices(std::vector<Vertex*> vertices) {
 
 void drawTriangles() {
 	std::vector<std::vector<Vertex*>> triangles = objectModel.getTriangles();
-	// std::vector<Vertex*> oddVertices = objectModel.doLoopSubdivision();
 
 	for (std::vector<Vertex*> vertices : triangles) {
 		glPolygonMode(GL_FRONT, GL_FILL);
@@ -127,14 +126,6 @@ void drawTriangles() {
 		}
 		glEnd();
 	}
-
-	/* glPointSize(5.0f);
-	glColor3f(0.0, 1.0, 0.0);
-	glBegin(GL_POINTS);
-	for (Vertex* vertex : oddVertices) {
-		glVertex3f(vertex->x, vertex->y, vertex->z);
-	}
-	glEnd(); */
 }
 
 void drawScene(void)

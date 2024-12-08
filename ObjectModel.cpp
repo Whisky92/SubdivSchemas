@@ -145,6 +145,7 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
 
     // store only one halfedge is enough
     std::vector<int> indexOfHalfEdges = std::vector<int>();
+    int originalNumberOfVertices = this->vertices.size();
 
     for (int i = 0; i < this->halfEdges.size(); i++) {
         if (oddVertecis[i] == nullptr) {
@@ -169,6 +170,8 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
     // O - Q - N
     //  \  |  /
     //     P
+
+    // I. Odd vertices
 
     for (int i : indexOfHalfEdges)
     {
@@ -269,6 +272,38 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
         faceQPN->halfEdge = halfEdgeQP;
         this->faces.push_back(faceQNM);
         this->faces.push_back(faceQPN);
+    }
+
+    // II. Even vertices
+
+    for (int i = 0; i < originalNumberOfVertices; i++)
+    {
+        Vertex* vertex = this->vertices[i];
+
+        float beta = 0.0;
+
+        Vertex modifiedVertexPos = Vertex();
+        int counter = 0;
+        for (HalfEdge* he : this->halfEdges)
+        {
+            if (he->origin == vertex) {
+                counter++;
+                modifiedVertexPos.x += he->next->origin->x;
+                modifiedVertexPos.y += he->next->origin->y;
+                modifiedVertexPos.z += he->next->origin->z;
+            }
+        }
+
+        if (counter <= 3) {
+            beta = 0.1875; // = 3/16
+        }
+        else {
+            beta = 3.0 / (8.0 * counter);
+        }
+
+        vertex->x = modifiedVertexPos.x * beta + vertex->x * (1.0 - counter * beta);
+        vertex->y = modifiedVertexPos.y * beta + vertex->y * (1.0 - counter * beta);
+        vertex->z = modifiedVertexPos.z * beta + vertex->z * (1.0 - counter * beta);
     }
 
     return oddVertecis;
