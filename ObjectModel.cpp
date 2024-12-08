@@ -143,8 +143,12 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
     std::vector<Vertex*> oddVertecis = std::vector<Vertex*>(this->halfEdges.size(), nullptr);
     std::vector<float> loopSubdivScheme = { 3.0 / 8.0, 3.0 / 8.0, 1.0 / 8.0, 1.0 / 8.0 };
 
+    // store only one halfedge is enough
+    std::vector<int> indexOfHalfEdges = std::vector<int>();
+
     for (int i = 0; i < this->halfEdges.size(); i++) {
         if (oddVertecis[i] == nullptr) {
+            if (this->halfEdges[i]->twin == nullptr) continue;
             std::vector<Vertex*> vertecis = {
                 this->halfEdges[i]->origin,            // halfedge origin
                 this->halfEdges[i]->next->origin,      // halfedge destination
@@ -154,25 +158,25 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
             Vertex* currentOddVertex = this->createVertexWithWeights(vertecis, loopSubdivScheme);
 
             oddVertecis[i] = currentOddVertex;
-            oddVertecis[this->getHalfEdgeIndex(*this->halfEdges[i]->    twin)] = currentOddVertex;
+            oddVertecis[this->getHalfEdgeIndex(*this->halfEdges[i]->twin)] = currentOddVertex; // could be optimezed, this line is not needed anywhere else
+            indexOfHalfEdges.push_back(i);
         }
     }
 
-   // return oddVertecis;
-
-    // TEST 
-    // 
     // new vertex is Q:
-    //    M
-    // O  Q  N
-    //    P
+    //     M
+    //  /  |  \
+    // O - Q - N
+    //  \  |  /
+    //     P
 
-    for (int i = 0; i < oddVertecis.size(); i++)
+    for (int i : indexOfHalfEdges)
     {
         Vertex* vertex = oddVertecis[i];
-        this->vertices.push_back(vertex);
 
         HalfEdge* halfEdgeNM = this->halfEdges[i]->next;
+
+        HalfEdge* halfEdgeMO = halfEdgeNM->next;
 
         HalfEdge* halfEdgeQM = new HalfEdge(
             vertex,
@@ -180,10 +184,12 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
             this->halfEdges[i]->prev,
             this->halfEdges[i]
         );
+        halfEdgeMO->incidentFace->halfEdge = halfEdgeQM; // reuse old face
+        halfEdgeMO->prev = halfEdgeQM;
 
         Face* faceQNM = new Face();
         HalfEdge* halfEdgeMQ = new HalfEdge(
-            this->halfEdges[i]->prev->origin,
+            halfEdgeMO->origin,
             faceQNM
         );
         halfEdgeMQ->twin = halfEdgeQM;
@@ -201,16 +207,22 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
         HalfEdge* halfEdgeQO = halfEdgeOQ->twin;
         halfEdgeOQ->next = halfEdgeQM;
 
+        // lower part
+
         HalfEdge* halfEdgeOP = halfEdgeQO->next;
+        halfEdgeOP->incidentFace->halfEdge = halfEdgeQO; // reuse old face
+
         HalfEdge* halfEdgePN = halfEdgeQO->next->next;
         halfEdgeQO->origin = vertex;
 
         HalfEdge* halfEdgePQ = new HalfEdge(
             halfEdgePN->origin,
-            halfEdgeQO->incidentFace,
+            halfEdgeOP->incidentFace,
             halfEdgeQO,
-            halfEdgeQO->next
+            halfEdgeOP
         );
+
+        halfEdgeOP->next = halfEdgePQ;
 
         Face* faceQPN = new Face();
 
@@ -226,15 +238,32 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
             halfEdgeNQ
         );
 
+        halfEdgePN->incidentFace = faceQPN;
+
+        halfEdgePN->prev = halfEdgeQP;
+        halfEdgePN->next = halfEdgeNQ;
+
         halfEdgeNQ->next = halfEdgeQP;
+        halfEdgeNQ->prev = halfEdgePN;
         halfEdgeNQ->twin = halfEdgeQN;
-        // halfEdgeNQ prev is not change
+        halfEdgeQN->twin = halfEdgeNQ;
 
         halfEdgeQO->prev = halfEdgePQ;
-        halfEdgePQ->incidentFace->halfEdge = halfEdgePQ;
+        halfEdgePQ->twin = halfEdgeQP;
+        halfEdgeQP->twin = halfEdgePQ;
 
         halfEdgeNM->next = halfEdgeMQ;
-        halfEdgeNM->incidentFace->halfEdge = halfEdgeNM;
+        halfEdgeNM->prev = halfEdgeQN;
+        halfEdgeNM->incidentFace = faceQNM;
+
+        this->vertices.push_back(vertex);
+
+        this->halfEdges.push_back(halfEdgeQM);
+        this->halfEdges.push_back(halfEdgeMQ);
+        this->halfEdges.push_back(halfEdgeQN);
+        this->halfEdges.push_back(halfEdgeNQ);
+        this->halfEdges.push_back(halfEdgePQ);
+        this->halfEdges.push_back(halfEdgeQP);
 
         faceQNM->halfEdge = halfEdgeMQ;
         faceQPN->halfEdge = halfEdgeQP;
