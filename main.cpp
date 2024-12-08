@@ -15,6 +15,7 @@ const static std::string sourceFile = "resources/cube.obj";
 
 static ObjectModel objectModel = ObjectModel();
 static bool isSuccessfulRead;
+static bool showEdge = true;
 
 static float radiusX, radiusY, radiusZ;
 static float frustumBottom, frustumTop, frustumLeft, frustumRight, frustumNear, frustumFar;                    
@@ -110,21 +111,23 @@ void drawTriangles() {
 		}
 		glEnd();
 
-		glPolygonMode(GL_FRONT, GL_LINE);
+		if (showEdge) {
+			glPolygonMode(GL_FRONT, GL_LINE);
 
-		if (sourceFile == "resources/tetrahedron.obj") {
-			glLineWidth(3.0f);
-		}
-		else {
-			glLineWidth(2.0f);
-		}
+			if (sourceFile == "resources/tetrahedron.obj") {
+				glLineWidth(3.0f);
+			}
+			else {
+				glLineWidth(2.0f);
+			}
 
-		glColor3f(1.0, 0.0, 0.0);
-		glBegin(GL_LINE_LOOP);
-		for (Vertex* vertex : vertices) {
-			glVertex3f(vertex->x, vertex->y, vertex->z);
+			glColor3f(1.0, 0.0, 0.0);
+			glBegin(GL_LINE_LOOP);
+			for (Vertex* vertex : vertices) {
+				glVertex3f(vertex->x, vertex->y, vertex->z);
+			}
+			glEnd();
 		}
-		glEnd();
 	}
 }
 
@@ -191,6 +194,9 @@ void keyInput(unsigned char key, int x, int y)
 			break;
 		case 's':
 			objectModel.doLoopSubdivision();
+			break;
+		case 'e':
+			showEdge = !showEdge;
 			break;
 		case 'q':
 			exit(0);
