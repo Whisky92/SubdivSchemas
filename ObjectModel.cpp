@@ -218,6 +218,8 @@ std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
             halfEdgeNQ
         );
 
+        halfEdgePN->incidentFace = faceQPN;
+
         halfEdgePN->prev = halfEdgeQP;
         halfEdgePN->next = halfEdgeNQ;
 
