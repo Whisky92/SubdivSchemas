@@ -51,8 +51,10 @@ public:
 	Vertex* maxCubePos;
 
 	ObjectModel();
+	~ObjectModel();
 	std::vector<std::vector<Vertex*>> getTriangles();
 	std::vector<Vertex*> doLoopSubdivision();
+	void freeMemory();
 private:
 	std::vector<Vertex*> vertices;
 	std::vector<Face*> faces;

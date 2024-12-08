@@ -11,7 +11,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-const static std::string sourceFile = "resorces/sphere.obj";
+const static std::string sourceFile = "resources/sphere.obj";
 
 static ObjectModel objectModel = ObjectModel();
 static bool isSuccessfulRead;
@@ -37,13 +37,13 @@ void calculateViewPositions() {
 	float zOffset = radiusZ * 3.0;
 
 	float frustrumSize = std::max(radiusX, std::max(radiusY, radiusZ));
-	float multiplier = 1.5;
+	float multiplier = (sourceFile == "resources/tetrahedron.obj") ? 1.3 : 2.0;
 
 	frustumBottom = -frustrumSize * multiplier;
 	frustumTop = frustrumSize * multiplier;
 	frustumLeft = -frustrumSize * multiplier;
 	frustumRight = frustrumSize * multiplier;
-	frustumNear = frustrumSize;
+	frustumNear = frustrumSize * multiplier;
 	frustumFar = frustumNear * 6;
 
 	camX = centerX;
@@ -91,7 +91,6 @@ std::array<float, 3> calculateNormalVertices(std::vector<Vertex*> vertices) {
 		ny /= length;
 		nz /= length;
 	}
-
 	return { nx, ny, nz };
 }
 
@@ -231,7 +230,7 @@ void setupLighting(void) {
 
 	// Material property vectors.
 	float matSpec[] = { 1.0, 1.0, 1.0, 1.0 };
-	float matShine[] = { 20.0f };
+	float matShine[] = { 50.0f };
 
 	// Material properties shared by all the spheres.
 	glMaterialfv(GL_FRONT, GL_SPECULAR, matSpec);

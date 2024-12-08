@@ -6,6 +6,9 @@
 #include "structures.h"
 
 ObjectModel::ObjectModel() {};
+ObjectModel::~ObjectModel() {
+    freeMemory();
+};
 
 bool ObjectModel::readObjFile(std::string filename) {
     std::vector<std::string> lines;
@@ -92,6 +95,23 @@ bool ObjectModel::readObjFile(std::string filename) {
     }
 
 	return true;
+}
+
+void ObjectModel::freeMemory() {
+    for (Vertex* vertex : vertices) {
+        delete vertex;
+    }
+    vertices.clear();
+
+    for (Face* face : faces) {
+        delete face;
+    }
+    faces.clear();
+
+    for (HalfEdge* halfEdge : halfEdges) {
+        delete halfEdge;
+    }
+    halfEdges.clear();
 }
 
 std::vector<std::vector<Vertex*>> ObjectModel::getTriangles() {
