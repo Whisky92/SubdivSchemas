@@ -6,6 +6,9 @@
 #include "structures.h"
 
 ObjectModel::ObjectModel() {};
+ObjectModel::~ObjectModel() {
+    freeMemory();
+};
 
 bool ObjectModel::readObjFile(std::string filename) {
     std::vector<std::string> lines;
@@ -27,7 +30,7 @@ bool ObjectModel::readObjFile(std::string filename) {
         file >> command;
         if (command == "v") {
             file >> xPos >> yPos >> zPos;
-            this->vertices.push_back(Vertex(xPos, yPos, zPos));
+            this->vertices.push_back(new Vertex(xPos, yPos, zPos));
             if (minCubePos->x > xPos)
                 minCubePos->x = xPos;
             if (minCubePos->y > yPos)
@@ -69,29 +72,46 @@ bool ObjectModel::readObjFile(std::string filename) {
         };
 
         for (int i = 0; i < currentHalfEdges.size(); i++) {
-            currentHalfEdges[i]->origin = &this->vertices[currentFaceIndecis[i]-1];
+            currentHalfEdges[i]->origin = this->vertices[currentFaceIndecis[i]-1];
             currentHalfEdges[i]->incidentFace = currentFace;
             currentHalfEdges[i]->next = currentHalfEdges[(i + 1) % currentHalfEdges.size()];
             currentHalfEdges[i]->prev = currentHalfEdges[(i + 2) % currentHalfEdges.size()];
-            for (auto& he : this->halfEdges) {
-                if (he.origin == &this->vertices[currentFaceIndecis[(i+1) % 3] - 1] && he.next->origin == currentHalfEdges[i]->origin) {
-                    if (he.twin != nullptr) {
-                        std::cout << "Something went wrong: " << he.toString() << std::endl;
+            for (auto he : this->halfEdges) {
+                if (he->origin == this->vertices[currentFaceIndecis[(i+1) % 3] - 1] && he->next->origin == currentHalfEdges[i]->origin) {
+                    if (he->twin != nullptr) {
+                        std::cout << "Something went wrong: " << he->toString() << std::endl;
                     }
-                    he.twin = currentHalfEdges[i];
-                    currentHalfEdges[i]->twin = &he;
+                    he->twin = currentHalfEdges[i];
+                    currentHalfEdges[i]->twin = he;
                     continue;
                 }
             }
         }
-        for (auto& he : currentHalfEdges) {
-            this->halfEdges.push_back(*he);
+        for (auto he : currentHalfEdges) {
+            this->halfEdges.push_back(he);
         }
         currentFace->halfEdge = currentHalfEdges[0];
-        this->faces.push_back(*currentFace);
+        this->faces.push_back(currentFace);
     }
 
 	return true;
+}
+
+void ObjectModel::freeMemory() {
+    for (Vertex* vertex : vertices) {
+        delete vertex;
+    }
+    vertices.clear();
+
+    for (Face* face : faces) {
+        delete face;
+    }
+    faces.clear();
+
+    for (HalfEdge* halfEdge : halfEdges) {
+        delete halfEdge;
+    }
+    halfEdges.clear();
 }
 
 std::vector<std::vector<Vertex*>> ObjectModel::getTriangles() {
@@ -99,7 +119,7 @@ std::vector<std::vector<Vertex*>> ObjectModel::getTriangles() {
         this->faces.size(),
         std::vector<Vertex*>(3));
     for (int i = 0; i < this->faces.size(); i++) {
-        HalfEdge* halfEdge = this->faces[i].halfEdge;
+        HalfEdge* halfEdge = this->faces[i]->halfEdge;
         std::vector<Vertex*> vertices(3);
         for (int i = 0; i < 3; i++) {
             vertices[i] = halfEdge->origin;
@@ -112,9 +132,205 @@ std::vector<std::vector<Vertex*>> ObjectModel::getTriangles() {
 
 int ObjectModel::getHalfEdgeIndex(HalfEdge& halfEdge) {
     for (int i = 0; i < this->halfEdges.size(); i++) {
-        if (&this->halfEdges[i] == &halfEdge) {
+        if (this->halfEdges[i] == &halfEdge) {
             return i;
         }
     }
     return -1;
 }
+
+std::vector<Vertex*> ObjectModel::doLoopSubdivision() {
+    std::vector<Vertex*> oddVertecis = std::vector<Vertex*>(this->halfEdges.size(), nullptr);
+    std::vector<float> loopSubdivScheme = { 3.0 / 8.0, 3.0 / 8.0, 1.0 / 8.0, 1.0 / 8.0 };
+
+    // store only one halfedge is enough
+    std::vector<int> indexOfHalfEdges = std::vector<int>();
+    int originalNumberOfVertices = this->vertices.size();
+
+    for (int i = 0; i < this->halfEdges.size(); i++) {
+        if (oddVertecis[i] == nullptr) {
+            if (this->halfEdges[i]->twin == nullptr) continue;
+            std::vector<Vertex*> vertecis = {
+                this->halfEdges[i]->origin,            // halfedge origin
+                this->halfEdges[i]->next->origin,      // halfedge destination
+                this->halfEdges[i]->prev->origin,      // third vertex of face
+                this->halfEdges[i]->twin->prev->origin // twin's farer vertex
+            };
+            Vertex* currentOddVertex = this->createVertexWithWeights(vertecis, loopSubdivScheme);
+
+            oddVertecis[i] = currentOddVertex;
+            oddVertecis[this->getHalfEdgeIndex(*this->halfEdges[i]->twin)] = currentOddVertex; // could be optimezed, this line is not needed anywhere else
+            indexOfHalfEdges.push_back(i);
+        }
+    }
+
+    // new vertex is Q:
+    //     M
+    //  /  |  \
+    // O - Q - N
+    //  \  |  /
+    //     P
+
+    // I. Odd vertices
+
+    for (int i : indexOfHalfEdges)
+    {
+        Vertex* vertex = oddVertecis[i];
+
+        HalfEdge* halfEdgeNM = this->halfEdges[i]->next;
+
+        HalfEdge* halfEdgeMO = halfEdgeNM->next;
+
+        HalfEdge* halfEdgeQM = new HalfEdge(
+            vertex,
+            this->halfEdges[i]->incidentFace,
+            this->halfEdges[i]->prev,
+            this->halfEdges[i]
+        );
+        halfEdgeMO->incidentFace->halfEdge = halfEdgeQM; // reuse old face
+        halfEdgeMO->prev = halfEdgeQM;
+
+        Face* faceQNM = new Face();
+        HalfEdge* halfEdgeMQ = new HalfEdge(
+            halfEdgeMO->origin,
+            faceQNM
+        );
+        halfEdgeMQ->twin = halfEdgeQM;
+        halfEdgeQM->twin = halfEdgeMQ;
+        HalfEdge* halfEdgeQN = new HalfEdge(
+            vertex,
+            faceQNM,
+            halfEdgeNM,
+            halfEdgeMQ
+        );
+        halfEdgeMQ->prev = halfEdgeNM;
+        halfEdgeMQ->next = halfEdgeQN;
+
+        HalfEdge* halfEdgeOQ = this->halfEdges[i];
+        HalfEdge* halfEdgeQO = halfEdgeOQ->twin;
+        halfEdgeOQ->next = halfEdgeQM;
+
+        // lower part
+
+        HalfEdge* halfEdgeOP = halfEdgeQO->next;
+        halfEdgeOP->incidentFace->halfEdge = halfEdgeQO; // reuse old face
+
+        HalfEdge* halfEdgePN = halfEdgeQO->next->next;
+        halfEdgeQO->origin = vertex;
+
+        HalfEdge* halfEdgePQ = new HalfEdge(
+            halfEdgePN->origin,
+            halfEdgeOP->incidentFace,
+            halfEdgeQO,
+            halfEdgeOP
+        );
+
+        halfEdgeOP->next = halfEdgePQ;
+
+        Face* faceQPN = new Face();
+
+        HalfEdge* halfEdgeNQ = new HalfEdge(
+            halfEdgeNM->origin,
+            faceQPN
+        );
+
+        HalfEdge* halfEdgeQP = new HalfEdge(
+            vertex,
+            faceQPN,
+            halfEdgePN,
+            halfEdgeNQ
+        );
+
+        halfEdgePN->incidentFace = faceQPN;
+
+        halfEdgePN->prev = halfEdgeQP;
+        halfEdgePN->next = halfEdgeNQ;
+
+        halfEdgeNQ->next = halfEdgeQP;
+        halfEdgeNQ->prev = halfEdgePN;
+        halfEdgeNQ->twin = halfEdgeQN;
+        halfEdgeQN->twin = halfEdgeNQ;
+
+        halfEdgeQO->prev = halfEdgePQ;
+        halfEdgePQ->twin = halfEdgeQP;
+        halfEdgeQP->twin = halfEdgePQ;
+
+        halfEdgeNM->next = halfEdgeMQ;
+        halfEdgeNM->prev = halfEdgeQN;
+        halfEdgeNM->incidentFace = faceQNM;
+
+        this->vertices.push_back(vertex);
+
+        this->halfEdges.push_back(halfEdgeQM);
+        this->halfEdges.push_back(halfEdgeMQ);
+        this->halfEdges.push_back(halfEdgeQN);
+        this->halfEdges.push_back(halfEdgeNQ);
+        this->halfEdges.push_back(halfEdgePQ);
+        this->halfEdges.push_back(halfEdgeQP);
+
+        faceQNM->halfEdge = halfEdgeMQ;
+        faceQPN->halfEdge = halfEdgeQP;
+        this->faces.push_back(faceQNM);
+        this->faces.push_back(faceQPN);
+    }
+
+    // II. Even vertices
+
+    for (int i = 0; i < originalNumberOfVertices; i++)
+    {
+        Vertex* vertex = this->vertices[i];
+
+        float beta = 0.0;
+
+        Vertex modifiedVertexPos = Vertex();
+        int counter = 0;
+        for (HalfEdge* he : this->halfEdges)
+        {
+            if (he->origin == vertex) {
+                counter++;
+                modifiedVertexPos.x += he->next->origin->x;
+                modifiedVertexPos.y += he->next->origin->y;
+                modifiedVertexPos.z += he->next->origin->z;
+            }
+        }
+
+        if (counter <= 3) {
+            beta = 0.1875; // = 3/16
+        }
+        else {
+            beta = 3.0 / (8.0 * counter);
+        }
+
+        vertex->x = modifiedVertexPos.x * beta + vertex->x * (1.0 - counter * beta);
+        vertex->y = modifiedVertexPos.y * beta + vertex->y * (1.0 - counter * beta);
+        vertex->z = modifiedVertexPos.z * beta + vertex->z * (1.0 - counter * beta);
+    }
+
+    return oddVertecis;
+}
+
+Vertex* ObjectModel::createVertexAtHalfWay(Vertex& v1, Vertex& v2) {
+    Vertex* oddVertex = new Vertex(
+        (v1.x + v2.x) / 2.0,
+        (v1.y + v2.y) / 2.0,
+        (v1.z + v2.z) / 2.0
+    );
+
+    return oddVertex;
+}
+
+
+Vertex* ObjectModel::createVertexWithWeights(std::vector<Vertex*> &vertecis, std::vector<float> &weights) {
+    while (vertecis.size() > weights.size())
+        weights.push_back(1.0);
+
+    Vertex* oddVertex = new Vertex();
+    for (int i = 0; i < vertecis.size(); i++)
+    {
+        oddVertex->x += vertecis[i]->x * weights[i];
+        oddVertex->y += vertecis[i]->y * weights[i];
+        oddVertex->z += vertecis[i]->z * weights[i];
+    }
+
+    return oddVertex;
+};

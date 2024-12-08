@@ -51,13 +51,18 @@ public:
 	Vertex* maxCubePos;
 
 	ObjectModel();
+	~ObjectModel();
 	std::vector<std::vector<Vertex*>> getTriangles();
+	std::vector<Vertex*> doLoopSubdivision();
+	void freeMemory();
 private:
-	std::vector<Vertex> vertices;
-	std::vector<Face> faces;
-	std::vector<HalfEdge> halfEdges;
+	std::vector<Vertex*> vertices;
+	std::vector<Face*> faces;
+	std::vector<HalfEdge*> halfEdges;
 
 	int getHalfEdgeIndex(HalfEdge& halfEdge);
+	Vertex* createVertexAtHalfWay(Vertex& v1, Vertex& v2);
+	Vertex* createVertexWithWeights(std::vector<Vertex*>& vertecis, std::vector<float>& weights);
 };
 
 #endif
